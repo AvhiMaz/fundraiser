@@ -16,4 +16,9 @@ pub mod fundraiser_anchor {
         ctx.accounts.initialize(amount, duration, ctx.bumps)?;
         Ok(())
     }
+
+    pub fn contribute(ctx: Context<Contribute>, amount: u64) -> Result<()> {
+        ctx.accounts.contribute(amount)?;
+        Ok(())
+    }
 }
