@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[account]
+#[derive(InitSpace)]
 pub struct Fundraiser {
     pub admin: Pubkey,       // the one who will start the fundraising
     pub which_mint: Pubkey,  // which mint to rise
