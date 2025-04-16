@@ -1,6 +1,7 @@
 #![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
 
+mod errors;
 mod instructions;
 mod states;
 
@@ -24,6 +25,11 @@ pub mod fundraiser_anchor {
 
     pub fn refund(ctx: Context<Refund>) -> Result<()> {
         ctx.accounts.refund()?;
+        Ok(())
+    }
+
+    pub fn done(ctx: Context<Done>) -> Result<()> {
+        ctx.accounts.done()?;
         Ok(())
     }
 }
