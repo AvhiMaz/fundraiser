@@ -21,4 +21,9 @@ pub mod fundraiser_anchor {
         ctx.accounts.contribute(amount)?;
         Ok(())
     }
+
+    pub fn refund(ctx: Context<Refund>) -> Result<()> {
+        ctx.accounts.refund()?;
+        Ok(())
+    }
 }
