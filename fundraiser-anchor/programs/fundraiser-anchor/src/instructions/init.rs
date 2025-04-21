@@ -1,11 +1,10 @@
-#![allow(clippy::needless_lifetimes)]
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, Token, TokenAccount},
 };
 
-use crate::states::Fundraiser;
+use crate::{constants::MIN_AMOUNT_TO_RAISE, errors::FundraiserError, states::Fundraiser};
 
 #[derive(Accounts)]
 
@@ -44,6 +43,12 @@ pub struct Init<'info> {
 
 impl<'info> Init<'info> {
     pub fn initialize(&mut self, amount: u64, duration: u8, bumps: InitBumps) -> Result<()> {
+        // Check if the amount to raise meets the minimum amount required
+        require!(
+            amount > MIN_AMOUNT_TO_RAISE.pow(self.which_mint.decimals as u32),
+            FundraiserError::InvalidAmount
+        );
+
         //init
         self.fundraiser.set_inner(Fundraiser {
             admin: self.admin.key(),

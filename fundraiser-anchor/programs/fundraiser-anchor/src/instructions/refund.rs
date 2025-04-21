@@ -1,9 +1,11 @@
-#![allow(clippy::needless_lifetimes)]
-
 use anchor_lang::prelude::*;
 use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
 
-use crate::states::{Contributor, Fundraiser};
+use crate::{
+    constants::SECONDS_TO_DAYS,
+    errors::FundraiserError,
+    states::{Contributor, Fundraiser},
+};
 
 #[derive(Accounts)]
 pub struct Refund<'info> {
@@ -58,6 +60,19 @@ pub struct Refund<'info> {
 
 impl<'info> Refund<'info> {
     pub fn refund(&mut self) -> Result<()> {
+        let current_time = Clock::get()?.unix_timestamp;
+
+        require!(
+            self.fundraiser.end_time
+                >= ((current_time - self.fundraiser.time_started) / SECONDS_TO_DAYS) as u8,
+            FundraiserError::FundraiserNotEnded
+        );
+
+        require!(
+            self.vault.amount < self.fundraiser.amount_of_mint,
+            FundraiserError::TargetMet
+        );
+
         //transfer
         let cpi_program = self.token_program.to_account_info();
 

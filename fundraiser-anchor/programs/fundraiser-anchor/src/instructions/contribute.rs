@@ -1,12 +1,14 @@
-#![allow(clippy::needless_lifetimes)]
-
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{transfer, Mint, Token, TokenAccount, Transfer},
 };
 
-use crate::states::{Contributor, Fundraiser};
+use crate::{
+    constants::{MAX_CONTRIBUTION_PERCENTAGE, PERCENTAGE_SCALER, SECONDS_TO_DAYS},
+    errors::FundraiserError,
+    states::{Contributor, Fundraiser},
+};
 
 #[derive(Accounts)]
 pub struct Contribute<'info> {
@@ -21,7 +23,7 @@ pub struct Contribute<'info> {
     #[account(
         mut,
         has_one= which_mint,
-        seeds = [b"fundraiser", fundraiser.admin.as_ref()],
+        seeds = [b"fundraiser".as_ref(), fundraiser.admin.as_ref()],
         bump = fundraiser.bump
     )]
     pub fundraiser: Account<'info, Fundraiser>,
@@ -60,6 +62,39 @@ pub struct Contribute<'info> {
 
 impl<'info> Contribute<'info> {
     pub fn contribute(&mut self, amount: u64) -> Result<()> {
+        // Check if the amount to contribute meets the minimum amount required
+        require!(
+            amount > 1_u8.pow(self.which_mint.decimals as u32) as u64,
+            FundraiserError::ContributionTooSmall
+        );
+
+        // Check if the amount to contribute is less than the maximum allowed contribution
+        require!(
+            amount
+                <= (self.fundraiser.amount_of_mint * MAX_CONTRIBUTION_PERCENTAGE)
+                    / PERCENTAGE_SCALER,
+            FundraiserError::ContributionTooBig
+        );
+
+        // Check if the fundraising duration has been reached
+        let current_time = Clock::get()?.unix_timestamp;
+        require!(
+            self.fundraiser.end_time
+                <= ((current_time - self.fundraiser.time_started) / SECONDS_TO_DAYS) as u8,
+            FundraiserError::FundraiserEnded
+        );
+
+        // Check if the maximum contributions per contributor have been reached
+        require!(
+            (self.contributor_acc.amount
+                <= (self.fundraiser.amount_of_mint * MAX_CONTRIBUTION_PERCENTAGE)
+                    / PERCENTAGE_SCALER)
+                && (self.contributor_acc.amount + amount
+                    <= (self.fundraiser.amount_of_mint * MAX_CONTRIBUTION_PERCENTAGE)
+                        / PERCENTAGE_SCALER),
+            FundraiserError::MaximumContributionsReached
+        );
+
         // transfer logic
         let cpi_program = self.token_program.to_account_info();
 

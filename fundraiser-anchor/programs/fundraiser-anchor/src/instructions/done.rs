@@ -1,5 +1,3 @@
-#![allow(clippy::needless_lifetimes)]
-
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -18,21 +16,12 @@ pub struct Done<'info> {
     // which mint to collect
     pub which_mint: Account<'info, Mint>,
 
-    // ata account of the admin
-    #[account(
-        init_if_needed,
-        payer = admin,
-        associated_token::mint = which_mint,
-        associated_token::authority = admin,
-    )]
-    pub admin_ata: Account<'info, TokenAccount>,
-
     // finding fundraiser pda
     #[account(
         mut,
-        close = admin,
-        seeds = [b"fundraiser", fundraiser.admin.key().as_ref()],
+        seeds = [b"fundraiser".as_ref(), admin.key().as_ref()],
         bump = fundraiser.bump,
+        close = admin,
     )]
     pub fundraiser: Account<'info, Fundraiser>,
 
@@ -44,9 +33,18 @@ pub struct Done<'info> {
     )]
     pub vault: Account<'info, TokenAccount>,
 
+    // ata account of the admin
+    #[account(
+        init_if_needed,
+        payer = admin,
+        associated_token::mint = which_mint,
+        associated_token::authority = admin,
+    )]
+    pub admin_ata: Account<'info, TokenAccount>,
+
     //req program
-    pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
@@ -55,7 +53,7 @@ impl<'info> Done<'info> {
         // check if target is met or not ?
         require!(
             self.vault.amount >= self.fundraiser.amount_of_mint,
-            FundraiserError::FundraisingNotCompleted
+            FundraiserError::TargetNotMet
         );
 
         // transfer from vault to admin's ata account
