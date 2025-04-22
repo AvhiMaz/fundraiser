@@ -105,28 +105,32 @@ describe("fundraiser", () => {
 
   })
 
-  // it("done", async() => {
-  //   const vault = getAssociatedTokenAddressSync(which_mint, fundraiser, true);
-  //
-  //   const tx = await program.methods.done()
-  //   .accountsPartial({
-  //     admin: admin.publicKey,
-  //     whichMint: which_mint,
-  //     fundraiser,
-  //     vault,
-  //     adminAta: adminATA,
-  //     tokenProgram: TOKEN_PROGRAM_ID,
-  //     systemProgram: anchor.web3.SystemProgram.programId,
-  //     associatedTokenProgram: ASSOCIATED_PROGRAM_ID
-  //   })
-  //   .signers([admin])
-  //   .rpc()
-  //   .then(confirm)
-  //
-  //   console.log(tx);
-  //
-  //
-  // })
+  it("done", async () => {
+    try {
+      const vault = getAssociatedTokenAddressSync(which_mint, fundraiser, true);
+
+      const tx = await program.methods
+      .done()
+      .accountsPartial({
+        admin: admin.publicKey,
+       whichMint: which_mint,
+        fundraiser,
+        adminAta: adminATA,
+        vault,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .signers([admin])
+      .rpc({
+        skipPreflight: true,
+      })
+      .then(confirm);
+
+      console.log(tx);
+      console.log("Vault balance", (await provider.connection.getTokenAccountBalance(vault)).value.amount);
+    } catch (error) {
+      console.log(error.msg);
+    }
+  }); 
 
   it("refund", async() => {
     const vault = getAssociatedTokenAddressSync(which_mint, fundraiser, true);
