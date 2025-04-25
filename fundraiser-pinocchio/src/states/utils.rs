@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use pinocchio::program_error::ProgramError;
 
 pub trait DataLen {

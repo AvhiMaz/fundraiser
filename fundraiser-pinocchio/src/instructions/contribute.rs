@@ -1,3 +1,6 @@
+#![allow(unused_unsafe)]
+#![allow(dead_code)]
+
 use pinocchio::{
     account_info::AccountInfo,
     instruction::{Seed, Signer},
