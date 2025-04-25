@@ -8,7 +8,7 @@ pub struct Fundraiser {
     pub is_initialized: bool,
     pub maker: Pubkey,
     pub mint_to_raise: Pubkey,
-    pub amount_to_raise: Pubkey,
+    pub amount_to_raise: u64,
     pub current_amount: u64,
     pub time_started: i64,
     pub duration: u8,
@@ -32,10 +32,10 @@ impl Fundraiser {
         &mut self,
         maker: Pubkey,
         mint_to_raise: Pubkey,
-        amount_to_raise: Pubkey,
-        time_started: i64,
+        amount_to_raise: u64,
         duration: u8,
         bump: u8,
+        time_started: i64,
     ) {
         self.is_initialized = true;
         self.maker = maker;
