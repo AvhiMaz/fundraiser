@@ -3,8 +3,8 @@ use super::{DataLen, Initialized};
 #[repr(C)]
 #[derive(Clone, Default, Debug, PartialEq)]
 pub struct Contribute {
-    is_initialized: bool,
-    amount: u64,
+    pub is_initialized: bool,
+    pub amount: u64,
 }
 
 impl DataLen for Contribute {
@@ -18,6 +18,8 @@ impl Initialized for Contribute {
 }
 
 impl Contribute {
+    pub const SEED: &'static str = "contribute";
+
     pub fn initialize(&mut self, amount: u64) {
         self.is_initialized = true;
         self.amount = amount;
