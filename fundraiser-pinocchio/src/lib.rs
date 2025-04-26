@@ -1,9 +1,11 @@
+#![feature(const_mut_refs)]
 #![no_std]
 
 #[cfg(not(feature = "no-entrypoint"))]
 #[cfg(feature = "std")]
 extern crate std;
 
+mod entrypoint;
 mod instructions;
 mod states;
 
